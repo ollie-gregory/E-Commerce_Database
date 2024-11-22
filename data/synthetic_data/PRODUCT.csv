@@ -1,0 +1,11 @@
+p_number,p_name,p_stock,p_category,p_warranty_length,p_price,p_weight,p_dimensions,p_colour,p_description,p_brand,is_unavailable
+1001,4K Smart TV,50,Electronics,24,799.99,15.5,55x35x5,Black,55-inch 4K Smart TV with HDR,Samsung,false
+1002,Wireless Headphones,100,Electronics,12,199.99,0.3,18x15x8,White,Noise-cancelling wireless headphones,Sony,false
+1003,Coffee Maker,75,Appliances,12,89.99,2.8,30x25x40,Silver,Programmable 12-cup coffee maker,Breville,false
+1004,Gaming Console,25,Electronics,24,499.99,4.2,30x25x7,Black,Next-gen gaming console,PlayStation,false
+1005,Laptop,60,Electronics,24,1299.99,2.1,35x24x2,Grey,15-inch laptop with SSD,Dell,false
+1006,Smartwatch,85,Electronics,12,299.99,0.1,4x4x1,Rose Gold,Fitness tracking smartwatch,Apple,false
+1007,Blender,120,Appliances,12,79.99,3.5,20x20x40,Black,High-speed blender with multiple settings,Ninja,false
+1008,Tablet,45,Electronics,24,599.99,0.8,25x17x0.8,Space Grey,10-inch tablet with retina display,Apple,false
+1009,Robot Vacuum,30,Appliances,24,399.99,3.2,35x35x10,White,Smart robot vacuum with mapping,iRobot,false
+1010,Wireless Speaker,150,Electronics,12,149.99,1.5,15x15x20,Black,Portable wireless speaker with bass boost,Bose,false

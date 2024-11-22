@@ -1,0 +1,16 @@
+payment_method_id,payment_method,cst_email,is_default,expiry_date
+101,CREDIT_CARD,john.doe@email.com,false,2025-12-31
+102,GIFT_CARD,emma.smith@email.com,false,2024-12-31
+103,CREDIT_CARD,alice.jones@email.com,true,2026-06-30
+104,CREDIT_CARD,robert.wilson@email.com,true,2025-09-30
+105,GIFT_CARD,sarah.brown@email.com,true,2024-12-31
+106,CREDIT_CARD,michael.green@email.com,true,2026-03-31
+107,CREDIT_CARD,lisa.taylor@email.com,true,2025-08-31
+108,GIFT_CARD,david.clark@email.com,false,2024-12-31
+109,CREDIT_CARD,rachel.white@email.com,true,2026-01-31
+110,GIFT_CARD,peter.hall@email.com,false,2024-12-31
+111,CREDIT_CARD,emma.smith@email.com,true,2025-12-31
+112,CREDIT_CARD,sarah.brown@email.com,false,2026-12-31
+113,CREDIT_CARD,david.clark@email.com,true,2027-12-31
+114,CREDIT_CARD,peter.hall@email.com,true,2026-11-30
+115,CREDIT_CARD,john.doe@email.com,true,2027-01-31

@@ -1,0 +1,5 @@
+rt_ticket_number,o_number,rt_refund_total,rt_start_date,rt_due_date,rt_status
+601,301,199.99,2024-01-22,2024-02-05,Completed
+602,302,79.99,2024-01-26,2024-02-09,Denied
+603,303,499.99,2024-02-07,2024-02-21,Pending
+604,304,1199.99,2024-02-21,2024-03-06,Cancelled

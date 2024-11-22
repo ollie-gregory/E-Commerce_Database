@@ -1,0 +1,11 @@
+cst_email,cst_name,cst_password,cst_birth_date,cst_phone,building,street,city,country,post_code
+john.doe@email.com,John Doe,hash123,1985-03-15,1234567890,42,Oak Street,London,UK,SW1A 1AA
+emma.smith@email.com,Emma Smith,hash456,1990-07-22,2345678901,15,Maple Avenue,Manchester,UK,M1 1AA
+alice.jones@email.com,Alice Jones,hash789,1988-11-30,3456789012,78,Pine Road,Birmingham,UK,B1 1BB
+robert.wilson@email.com,Robert Wilson,hash101,1982-04-08,4567890123,23,Cedar Lane,Edinburgh,UK,EH1 1YQ
+sarah.brown@email.com,Sarah Brown,hash202,1993-09-17,5678901234,56,Birch Close,Glasgow,UK,G1 1QN
+michael.green@email.com,Michael Green,hash303,1987-06-12,6789012345,89,Elm Street,Liverpool,UK,L1 1AA
+lisa.taylor@email.com,Lisa Taylor,hash404,1991-02-28,7890123456,34,Willow Way,Bristol,UK,BS1 1AA
+david.clark@email.com,David Clark,hash505,1986-08-19,8901234567,67,Ash Road,Cardiff,UK,CF1 1AA
+rachel.white@email.com,Rachel White,hash606,1994-05-03,9012345678,12,Holly Lane,Leeds,UK,LS1 1AA
+peter.hall@email.com,Peter Hall,hash707,1989-12-25,0123456789,45,Sycamore Drive,Newcastle,UK,NE1 1AA

@@ -1,0 +1,303 @@
+---
+title: "E-Commerce Database Design and Implementation"
+author: "21442"
+date: 6 November 2024
+format: 
+    html: 
+        page-layout: full
+self-contained: true
+---
+
+## Conceptual Database Design
+
+![Conceptual Diagram](diagrams/E-COMMERCE_er_diagram.png)
+
+### Entities
+
+The **CUSTOMER** entity represents a customer that has the attributes _cst_email_, _cst_name_, _cst_birth_date_, _cst_address_, _cst_phone_ and _cst_password_. The _cst_email_ attribute is the primary key and the _cst_address_ attribute is a composite attribute that contains the _cst_building_ (which is optional), _cst_street_, _cst_city_, _cst_state_ and _cst_postcode_ attributes.
+
+The **ORDER** entity represents an order that has the attributes _o_number_, _o_date_, _o_total_, _o_deduction_, and _o_grand_total_. The _o_number_ attribute is the primary key and the _o_total_ and _o_grand_total_ attributes are derived attributes based on the products ordered and the deductions applied.
+
+The **PRODUCT** entity represents a product with various attributes about the products with the _p_number_ attribute as the primary key. It also includes a multivalued and derived attribute _is_unavailable_ which is derived from the _p_stock_ attribute and takes a boolean value depending on whether the stock is 0 or not.
+
+The **DELIVERY** entity represents a delivery and has the attributes _tracking_number_, _delivery_date_, and _delivery_status_. The _tracking_number_ attribute is the primary key and the _delivery_status_ is a multivalued attribute that can take the values 'delivered', 'postponed', 'pending' and 'cancelled'.
+
+The **RETURN** entity represents a product return and has the attributes _rt_ticket_number_, _rt_start_date_, _rt_due_date_, _rt_status_, and _rt_refund_total_. The _rt_ticket_number_ attribute is the primary key and the _rt_status_ attribute is a multivalued attribute that can take the values 'pending', 'denied', 'completed' and 'cancelled'. The _rt_refund_total_ attribute is a derived attribute based on the products returned.
+
+The **PAYMENT_METHOD** supertype entity represents the different payment methods that can be used by customers. The supertype attributes are _is_default_, _expiry_date_, and _payment_method_id_. The subtype entities are **CREDIT_CARD** and **GIFT_CARD** which have the attributes _card_number_, _card_name_, and _card_cvv_ and _serial_number_, _initial_amount_ and _current_balance_ respectively. This is a disjoint, total specialisation as a payment method must be either a credit card or a gift card but not both.
+
+### Relationships
+
+The **CUSTOMER-ORDER** relationship is a one-to-many relationship where a customer may have a minimum of 0 orders and no maximum amount of orders, but every single order must be related to at least one customer and at most one customer.
+
+The **CUSTOMER-PAYMENT_METHOD** relationship is also a one-to-many relationship where a customer may have a minimum of 0 payment methods and no maximum amount of payment methods, but every single payment method must be related to at least one customer and at most one customer. I have chosen to give the customer entity the ability to have no payment methods as it is normal for a customer to set up an account before they have make any purchases.
+
+The **CUSTOMER-DELIVERY** relationship is again a one-to-many relationship where a customer may have a minimum of 0 deliveries and no maximum amount of deliveries, but every single delivery must be related to at least one customer and at most one customer.
+
+The **REVIEW** relationship is a many-to-many relationship where a customer may review multiple products and a product may have multiple customer reviews. This relationship has it's own attributes which are _r_date_, _r_text_, _r_ranking_ and _r_number_ which is unique.
+
+The **BASKET** relationship is similarly a many-to-many relationship where a customer may have multiple items in a basket and a product may be in multiple baskets. This relationship has it's own attribute _bsk_quantity_ which is the quantity of the product in the basket.
+
+The **ORDER-PRODUCT** relationship is a many-to-many relationship where an order must include at least one product but may include many products and a product can be in a minimum of 0 orders but a maximum of many orders. This relationship has it's own attributes _p_o_quantity_ and _p_o_subtotal_ which are the quantity of the product in the order and the derived subtotal of the product in the order respectively.
+
+The **ORDER-DELIVERY** relationship is a one-to-one relationship where an order must be associated with exactly one delivery and a delivery must be associated with exactly one order.
+
+The **ORDER-RETURN** relationship is a one-to-many relationship where an order may have a minimum of 0 returns and a maximum of many returns, but every single return must be related to at least one order and at most one order. This is because an order does not have to be returned, but if it is, different products in the order may be returned at different times.
+
+The **ORDER-PAYMENT_METHOD** relationship is a many-to-one relationship where an order must be associated with exactly one payment method, but a payment method may be associated with a minimum of 0 orders and no maximum amount of orders.
+
+## Relational Database Design
+
+![Relational Diagram](diagrams/E-COMMERCE_rel_diagram.png)
+
+In modelling the many-to-many relationships, I opted to create additional tables and entities that had not been in the E-R model. For example, the **ORDER-PRODUCT** relationship was modelled as a separate table called **ORDER_PRODUCT** which contained the attributes _o_number_ and _p_number_ as foreign keys that together made up the primary key. It also contained the attributes _p_o_quantity_ and _p_o_subtotal_ which were the quantity of the product in the order and the derived subtotal of the product in the order respectively. This was because the **ORDER-PRODUCT** relationship had attributes of its own that needed to be stored.
+
+Similarly, the **BASKET** relationship was modelled as two separate tables called **BASKET** and **BASKET_PRODUCT**. The **BASKET** table contains the attributes _basket_id_ which acts as the primary key, and _cst_email_ as a foreign key that references the CUSTOMER entity that the **BASKET** pertains to. The **BASKET_PRODUCT** table contains the attributes _basket_id_ and _p_number_ as foreign keys that together make up the primary key. It also contains the attribute _bsk_quantity_ which is the quantity of the product in the basket.
+
+I also modelled the review relationship as its own table called **REVIEW** which contained the attributes _r_number_, _r_ranking_, _r_text_ and _r_date_ along with the foreign keys _cst_email_ and _p_number_ which reference the **CUSTOMER** and **PRODUCT** entities respectively. The _r_number_ attribute acts as the primary key as it is possible that a customer may review the same product multiple times meaning that using the _cst_email_ and _p_number_ as a composite primary key would not be unique.
+
+Finally, I modelled the payment methods specialisation as three tables: **PAYMENT_METHOD**, **GIFT_CARD** and **CREDIT_CARD**. The **PAYMENT_METHOD** table contains the shared attributes of _expiry_date_ and _is_default_, along with the foreign key _cst_email_ which references the **CUSTOMER** that it belongs to. It also has two more attributes which are the primary key _payment_method_id_ and the multivalued attribute _payment_method_ which can take the values 'CREDIT_CARD' or 'GIFT_CARD'. The **GIFT_CARD** table contains the attributes _card_id_, _serial_number_, _initial_amount_ and _current_balance_ with the _card_id_ acting as the primary key. The **CREDIT_CARD** table contains the attributes _card_id_, _card_number_, _card_name_ and _card_cvv_ with the _card_id_ acting as the primary key. In both instances, the _card_id_ attribute is a foreign key that references the **PAYMENT_METHOD** table. This design was chosen as it allowed for the specialisation of payment methods into credit cards and gift cards.
+
+With regards to which attributes I have allowed to take `NULL` values, I have allowed the _cst_building_ attribute in the **CUSTOMER** entity to be `NULL` as it is possible that a customer may not have a building name or number in their address. I have also allowed the _o_deduction_ attribute in the **ORDER** entity to be `NULL` as it is possible that an order may not have any deductions applied to it.
+
+## Database Creation
+
+Creating the database presented a bit of a problem in the sense that the relational modelling platform that I chose to use was 'dbdiagram' which will not export the database to SQLite compatible code. As a result, I exported it to SQL Server compatible code and then had to manually convert it to SQLite compatible code. This involved doing a lot of google searches and reading the SQLite documentation to understand the differences between the two SQL dialects. While this was a bit more involved, I believe the process of modelling in 'dbdiagram' was much easier and helped me gain a better understanding of how I wanted my database to look than if I had purely used ERDPlus.
+
+I chose to create the database with constraints on the lengths of VARCHARs for several reasons:
+
+- Data integrity: By setting a maximum length for the VARCHARs, I can ensure that the data being inserted into the database is of a consistent format and length.
+- Performance: By setting a maximum length for the VARCHARs, I can reduce the amount of storage space required for the database, which can improve performance.
+- Security: By setting a maximum length for the VARCHARs, I can help prevent buffer overflow attacks, which can be used to exploit vulnerabilities in the database.
+
+## Synthetic Data Generation
+
+I populated my dataframe with synthetic data from the 'Claude Sonnet' AI model. I gave Claude the schema for my database and asked it to generate me some data for each of the tables. I then separated out this data into separate CSV files for each table and used the following python script to insert the data into my database:
+
+```python
+# After navigating to the student_files directory and installing pandas and sqlite3,
+# run this script in the shell using the command: `python3 import_data.py`
+
+import sqlite3
+import pandas as pd
+import os
+
+# Path to the SQLite database file
+db_path = "./E-COMMERCE.db"
+
+# Connect to the SQLite database
+conn = sqlite3.connect(db_path)
+
+# Path to the CSV directory
+csv_directory = "./synthetic_data"
+
+# List of tables to import
+tables = ["CUSTOMER", "PAYMENT_METHOD", "CREDIT_CARD", "GIFT_CARD", "PRODUCT", 
+          "BASKET", "BASKET_PRODUCT", "ORDERS", "ORDER_PRODUCT", "DELIVERY", "REVIEW", "ORDER_RETURNS"]
+
+for table in tables:
+    # Create the path to the individual CSV
+    csv_path = os.path.join(csv_directory, f"{table}.csv")
+
+    if os.path.exists(csv_path):
+        # Load the CSV file into a DataFrame
+        df = pd.read_csv(csv_path)
+        
+        # Insert the DataFrame into the SQLite table
+        df.to_sql(table, conn, if_exists="append", index=False)
+        print(f"Data imported successfully into {table} from {csv_path}")
+    else:
+        print(f"CSV file for table {table} not found in {csv_directory}")
+
+# Close the database connection
+conn.close()
+```
+
+I then ran various queries such as,
+
+```sql
+SELECT
+	o.o_number,
+	GROUP_CONCAT(d.delivery_building || ' ' || d.delivery_street || ' ' || d.delivery_city || ' ' ||d.delivery_country || ' ' || d.delivery_post_code) AS "Delivery Address",
+	GROUP_CONCAT(c.building || ' ' || c.street || ' ' || c.city || ' ' ||c.country || ' ' || c.post_code) AS "Customer Address"
+FROM DELIVERY AS d
+JOIN ORDERS AS o ON d.o_number = o.o_number
+LEFT OUTER JOIN CUSTOMER AS c ON o.cst_email = c.cst_email
+GROUP BY d.o_number, c.cst_email
+```
+
+to ensure that the data was consistent with itself. For example, the query above checks that the delivery addresses and customer addresses are consistent with each other. I also manually checked things like whether the order totals were consistent with the product quantities and prices and whether reviews were left by customers who had actually ordered the product. Finally, I created my own orders in order to have specific data to test my queries on. This was so that the query for the top 2 selling products in each category had enough data on sales to be able to generate meaningful results.
+
+## SQL Queries
+
+### 1. List of Customers and their orders
+
+```sql
+SELECT
+    c.cst_name AS "Customer Name",
+    c.cst_email AS "Customer Email",
+    o.o_number AS "Order Number",
+    o.o_date AS "Order date",
+    o.o_total AS "Order total",
+    GROUP_CONCAT(p.p_name || ' (Qty: ' || op.p_o_quantity || ')') AS "Products Ordered"
+FROM CUSTOMER AS c
+LEFT OUTER JOIN ORDERS AS o ON c.cst_email = o.cst_email
+LEFT OUTER JOIN ORDER_PRODUCT AS op ON o.o_number = op.o_number
+LEFT OUTER JOIN PRODUCT AS p ON op.p_number = p.p_number
+GROUP BY o.o_number
+ORDER BY c.cst_name, o.o_date DESC
+```
+
+When beginning to work on this query, I began by breaking down exactly what I wanted it to return for each row: the customer name, the customer email, the order number, the order date, the order total and the list of products ordered. From there I then had to work out how to get those things; fortunately, most of them were just standalone objects already in the database somewhere, however, the list of products ordered was a bit more complex. Due to the way I designed the **ORDERS** table, it didn't include a list of products ordered as they were stored elsewhere in a table called **ORDER_PRODUCTS** where each entity contained the product details, quantity and the order number it was associated with. This meant that in order to get the list of products ordered, I had to join the **ORDER_PRODUCTS** table to the **ORDERS** table on the order number. I then had to join the **PRODUCT** table to the **ORDER_PRODUCTS** table on the product number to get the product name. I then used the `GROUP_CONCAT()` function to concatenate the product names and quantities together for each order. This, I believe, was the most complicated part of the query.
+
+Beyond that, I had generated the data in such a way that there existed some customers who had made no orders (this is to represent creating an account but not ordering yet) and so to ensure that they were also listed, I used a `LEFT OUTER JOIN` on the **ORDERS**, **ORDER_PRODUCTS** and **PRODUCT** tables. This way, if there was no order for a customer, they would still be listed in the results with `NULL` values for the order details. Finally, I grouped the results by the and order number (this was for the `GROUP_CONCAT()` function to work properly) and ordered the results by the customer name and order date in descending order. The output of this query can be seen below: 
+
+![Query 1](query_results/query1.png)
+
+### 2. Customers with items in their baskets, their birthdays and gift card balances.
+
+```sql
+SELECT
+	c.cst_name AS "Customer Name",
+	c.cst_email AS "Customer Email",
+	c.cst_birth_date AS "Birthday",
+	gc.current_balance AS "Gift Card Current Balance",
+	GROUP_CONCAT(p.p_name || ' (Qty: ' || bp.bsk_quantity || ')') AS "Basket Items"
+FROM BASKET AS b
+JOIN BASKET_PRODUCT AS bp ON bp.basket_id = b.basket_id
+JOIN PRODUCT AS p ON bp.p_number = p.p_number
+JOIN CUSTOMER AS c ON b.cst_email = c.cst_email
+LEFT OUTER JOIN PAYMENT_METHOD AS pm ON c.cst_email = pm.cst_email AND pm.payment_method = 'GIFT_CARD'
+LEFT OUTER JOIN GIFT_CARD AS gc ON pm.payment_method_id = gc.card_id
+GROUP BY b.basket_id;
+```
+
+This query started much the same as the last with generating a list of basket items and their quantities for each customer. Because the design of the customer baskets was much the same as the design of customer orders, with BASKET and **BASKET_PRODUCT** tables, I was able to use the same logic as before to get the list of products in each basket. I joined the PRODUCT table to the **BASKET_PRODUCT** table on the product number and then the BASKET table to the **BASKET_PRODUCT** table on the basket ID. I then grouped the results by the basket ID and used the `GROUP_CONCAT()` function to concatenate the product names and quantities together for each basket.
+
+To get the customer details for each basket, I joined the **CUSTOMER** table to the **BASKET** table on the customer email (the primary key). I then used a `LEFT OUTER JOIN` to join the **PAYMENT_METHOD** table to the **CUSTOMER** table on the customer email and the condition that the payment method was 'GIFT_CARD'. This was because I only needed to access the payment methods of customers with gift cards in order to retrieve their current balance. The output of this query can be seen below:
+
+![Query 2](query_results/query2.png)
+
+### 3. Top 2 selling products in each category.
+
+```sql
+SELECT 
+    p_category AS "Product Category",
+    p_name AS "Product Name",
+    total_sold AS "Quantity Sold",
+    total_revenue AS "Total Revenue"
+FROM 
+    (SELECT 
+		p.p_category,
+		p.p_name,
+		SUM(op.p_o_quantity) AS total_sold,
+		SUM(op.p_o_subtotal) AS total_revenue,
+		ROW_NUMBER() OVER (PARTITION BY p.p_category ORDER BY SUM(op.p_o_quantity) DESC) AS sales_rank
+	FROM PRODUCT AS p
+	JOIN ORDER_PRODUCT AS op ON p.p_number = op.p_number
+	GROUP BY p.p_name)
+WHERE 
+    sales_rank <= 2
+ORDER BY 
+    p_category, total_sold DESC;
+```
+
+My approach to this query involved first creating a subquery that generated a table with the product category, product name, total quantity sold and total revenue for each product. I did this by joining the **PRODUCT** table to the **ORDER_PRODUCT** table on the product number and then grouped the products by the product name. This allowed me to then sum the quantities and revenue for each product. I was able to rank the products by quantity sold within each category by partitioning the data on the product category and using the `ROW_NUMBER()` window function. This function assigns a rank to each product within its category based on the quantity sold, with the highest selling product being ranked 1.
+
+I then used the outer query to filter the results to only include the top 2 selling products in each category by selecting only the rows where the sales rank was less than or equal to 2. Finally, I ordered the results by the product category and the total quantity sold in descending order. The output of this query can be seen below:
+
+![Query 3](query_results/query3.png){width=40%}
+
+### 4. Monthly sales growth (including any returns).
+
+```sql
+WITH MonthlySales AS (
+    SELECT 
+        strftime('%Y', o.o_date) AS year,
+        strftime('%m', o.o_date) AS month,
+        SUM(o.o_grand_total - IFNULL(r.rt_refund_total, 0)) AS total_sales
+    FROM ORDERS AS o
+    LEFT OUTER JOIN ORDER_RETURNS AS r ON o.o_number = r.o_number AND r.rt_status = 'Completed'
+    GROUP BY year, month
+    ORDER BY year, month
+),
+SalesGrowth AS (
+    SELECT 
+        year,
+        month,
+        total_sales,
+        LAG(total_sales) OVER (ORDER BY year, month) AS previous_month_sales
+    FROM MonthlySales
+)
+SELECT 
+    year AS "Year",
+    month AS "Month",
+    total_sales AS "Total Sales",
+    CONCAT(ROUND(((total_sales - previous_month_sales) * 100.0) / previous_month_sales, 2) || '%') AS "Sales Growth"
+FROM SalesGrowth;
+```
+
+This query was by far the most complex as it involved several subqueries which I was able to extract using the `WITH` command. In order to generate the monthly sales growth, I first had to calculate the total sales for each month. I did this by creating a subquery that I called _MonthlySales_ which selected the year and month from the order date using the `strftime()` (string formatted time) function. Here I grouped by the year and month for continuity even though I didn't have data that spanned multiple years. To generate the monthly sales, I summed the grand total of each order and subtracted the refund total from the **ORDER_RETURNS** table if the return status was 'Completed'. This was done using a `LEFT OUTER JOIN` on the **ORDERS** and **ORDER_RETURNS** tables on the order number. I then used the `IFNULL()` function to replace any `NULL` values that would have resulted from using the `LEFT OUTER JOIN` with 0.
+
+I then created another subquery called _SalesGrowth_ which selected the year, month, total sales and the previous month's sales from the _MonthlySales_ subquery. I used the `LAG()` window function to get the previous month's sales by ordering the data by year and month. This allowed me to compare the total sales for each month with the previous month's sales.
+
+Finally, I used the outer query to select the year, month, total sales and calculate the sales growth by subtracting the previous month's sales from the total sales, dividing by the previous month's sales and then multiplying by 100 to get a percentage. I then rounded this to 2 decimal places and concatenated a '%' symbol to the end of the result. The output of this query can be seen below:
+
+![Query 4](query_results/query4.png){width=40%}
+
+## Trigger design
+
+The trigger scenario that I chose to implement was to ensure that no reviews were made by anyone that had not ordered the product being reviewed. This is a real world situation that would prevent fake reviews from being left on products by people who had never actually purchased them. The trigger I designed was as follows:
+
+```sql
+CREATE TRIGGER REVIEW_VIOLATION
+BEFORE INSERT ON REVIEW
+FOR EACH ROW
+WHEN NOT EXISTS (
+    SELECT 1
+    FROM ORDERS AS o
+    JOIN ORDER_PRODUCT AS op ON o.o_number = op.o_number
+    WHERE o.cst_email = NEW.cst_email
+    AND op.p_number = NEW.p_number
+)
+BEGIN
+    -- If no matching order exists, prevent the insert by raising an error
+    SELECT RAISE(FAIL, 'Review violation: Customer has not ordered this product.');
+END;
+```
+
+This trigger is a `BEFORE INSERT` trigger that checks each row that is about to be inserted into the **REVIEW** table. The trigger tries to select an order from the **ORDERS** table where the customer email matches the customer email of the review and the product number matches the product being reviewed. It does this through joining the **ORDERS** and **ORDER_PRODUCT** tables on the order number. If no matching order is found, the trigger raises an error with the message 'Review violation: Customer has not ordered this product.' and prevents the insert from occurring. This ensures that only customers who have ordered a product can leave a review for it.
+
+I then tested this trigger using two scenarios: one where a customer had ordered the product and one where they had not. The first scenario was successful and the review was inserted into the table. The second scenario failed and the trigger prevented the review from being inserted. The output of this test can be seen below:
+
+Customer has ordered the product:
+```sql
+INSERT INTO REVIEW
+VALUES (
+	511,
+	4,
+	'Very noise cancelling - I could hardly hear a thing on the tube!',
+	'2024-04-30',
+	'sarah.brown@email.com',
+	1002
+);
+```
+
+![Trigger Success](query_results/trigger_success.png){width=40%}
+
+Customer has not ordered the product:
+```sql
+INSERT INTO REVIEW
+VALUES (
+	511,
+	4,
+	'Not bad I guess',
+	'2024-04-30',
+	'peter.hall@email.com',
+	1010
+);
+```
+
+![Trigger Error](query_results/trigger_fail.png){width=40%}
+
+When attempting to insert both into the table at the same time, the first review was successfully inserted while the second review was prevented from being inserted due to the trigger. This demonstrates that the trigger is working as intended.
