@@ -12,7 +12,7 @@ db_path = "../data/E-COMMERCE.db"
 conn = sqlite3.connect(db_path)
 
 # Path to the CSV directory
-csv_directory = "./synthetic_data"
+csv_directory = "../data/synthetic_data"
 
 # List of tables to import
 tables = ["CUSTOMER", "PAYMENT_METHOD", "CREDIT_CARD", "GIFT_CARD", "PRODUCT", 
