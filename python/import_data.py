@@ -6,7 +6,7 @@ import pandas as pd # type: ignore
 import os
 
 # Path to the SQLite database file
-db_path = "./E-COMMERCE.db"
+db_path = "../data/E-COMMERCE.db"
 
 # Connect to the SQLite database
 conn = sqlite3.connect(db_path)
